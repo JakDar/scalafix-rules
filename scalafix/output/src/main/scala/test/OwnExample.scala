@@ -20,7 +20,7 @@ class OwnExample(db: DefaultDB)(implicit ec: ExecutionContext) {
 
   def exist(olaId: String, alaId: String, userId: String): Future[Boolean] =
     users
-      .find(BSONDocument("olaId" -> olaId, "alaId" -> alaId, "userId" -> userId))
+      .find(BSONDocument("olaId" -> olaId, "alaId" -> alaId, "userId" -> userId), projection = Option.empty[BSONDocument])
       .one[BSONDocument]
       .map(_.isDefined)
 
@@ -31,7 +31,7 @@ class OwnExample(db: DefaultDB)(implicit ec: ExecutionContext) {
       .map(_.isDefined)
 
   def remove(olaId: String, alaId: String, userId: String): Future[Unit] =
-    users.remove(BSONDocument("olaId" -> olaId, "alaId" -> alaId, "userId" -> userId)).map(_ => ())
+    users.delete.one(BSONDocument("olaId" -> olaId, "alaId" -> alaId, "userId" -> userId)).map(_ => ())
 
   def goodRemove(olaId: String, alaId: String, userId: String): Future[Unit] =
     users.delete.one(BSONDocument("olaId" -> olaId, "alaId" -> alaId, "userId" -> userId)).map(_ => ())
