@@ -11,7 +11,7 @@ class OwnExample(db: DefaultDB)(implicit ec: ExecutionContext) {
 
   def register(olaId: String, alaId: String, userId: String): Future[Unit] =
     users
-      .update(
+      .update.one(
         BSONDocument("olaId"        -> olaId, "alaId" -> alaId, "userId" -> userId),
         BSONDocument("$setOnInsert" -> BSONDocument( /*"createdAt" -> new Date(),*/ "instructionStatus" -> "exposed")),
         upsert = true
@@ -24,12 +24,29 @@ class OwnExample(db: DefaultDB)(implicit ec: ExecutionContext) {
       .one[BSONDocument]
       .map(_.isDefined)
 
+  def goodFind(olaId: String, alaId: String, userId: String): Future[Boolean] =
+    users
+      .find(BSONDocument("olaId" -> olaId, "alaId" -> alaId, "userId" -> userId), projection = Option.empty[BSONDocument])
+      .one[BSONDocument]
+      .map(_.isDefined)
+
   def remove(olaId: String, alaId: String, userId: String): Future[Unit] =
     users.remove(BSONDocument("olaId" -> olaId, "alaId" -> alaId, "userId" -> userId)).map(_ => ())
 
+  def goodRemove(olaId: String, alaId: String, userId: String): Future[Unit] =
+    users.delete.one(BSONDocument("olaId" -> olaId, "alaId" -> alaId, "userId" -> userId)).map(_ => ())
+
   def marketingStatus(olaId: String, alaId: String, userId: String): Future[Unit] =
     users
-      .update(
+      .update.one(
+        BSONDocument("olaId" -> olaId, "alaId" -> alaId, "userId" -> userId),
+        BSONDocument("$set"  -> BSONDocument("marketingStatus" -> ""))
+      )
+      .map(_ => ())
+
+  def goodUpdate(olaId: String, alaId: String, userId: String): Future[Unit] =
+    users.update
+      .one(
         BSONDocument("olaId" -> olaId, "alaId" -> alaId, "userId" -> userId),
         BSONDocument("$set"  -> BSONDocument("marketingStatus" -> ""))
       )
@@ -37,7 +54,7 @@ class OwnExample(db: DefaultDB)(implicit ec: ExecutionContext) {
 
   def statementStatus(olaId: String, alaId: String, userId: String): Future[Unit] =
     users
-      .update(
+      .update.one(
         BSONDocument("olaId" -> olaId, "alaId" -> alaId, "userId" -> userId),
         BSONDocument("$set"  -> BSONDocument("statementStatus" -> "ala")),
         multi = true
