@@ -62,3 +62,39 @@ class OwnExample(db: DefaultDB)(implicit ec: ExecutionContext) {
       .map(_ => ())
 
 }
+
+object OwnExample {
+  import scala.util.Try
+  import java.time.Month
+
+  import java.util.Date
+  import reactivemongo.api.bson.{BSONDateTime, BSONHandler, BSONValue}
+
+  implicit object BSONDateTimeHandler extends BSONHandler[Date] {
+
+    override def readTry(bson: BSONValue): Try[java.util.Date] = bson match {
+      case dt: BSONDateTime => Try(new Date(dt.value))
+      case other            => scala.util.Failure(new IllegalArgumentException(s"invalid bson for date $other"))
+    }
+
+    override def writeTry(t: java.util.Date): Try[BSONValue] = Try(BSONDateTime(t.getTime))
+  }
+
+  import reactivemongo.api.bson.{BSONDocumentReader, BSONDocumentWriter}
+  implicit val menuItemHandler = new BSONDocumentReader[Month] with BSONDocumentWriter[Month] {
+    override def writeTry(t: Month) =
+      Try(t match {
+        case Month.MAY   => throw new IllegalStateException("May not supported")
+        case Month.APRIL => BSONDocument("type" -> "url", "caption" -> "ala", "url" -> "https://example.com")
+        case _ =>
+          BSONDocument("type" -> "other.months")
+      })
+
+    override def readDocument(bson: BSONDocument) =
+      Try(bson.getAsOpt[String]("type").get match {
+        case "url"    => Month.APRIL
+        case "plugin" => Month.MAY
+        case other    => throw new IllegalStateException(s"Menu item $other is not supported")
+      })
+  }
+}
