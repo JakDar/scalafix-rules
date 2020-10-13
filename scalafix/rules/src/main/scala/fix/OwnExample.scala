@@ -33,6 +33,10 @@ class OwnExample extends SemanticRule("OwnExample") {
             case "update" =>
               List(Patch.addRight(f, ".one"))
 
+
+            case "insert" =>
+              List(Patch.addRight(f, ".one"))
+
             case "remove" =>
               Patch.replaceTree(name, "delete") :: Patch.addRight(f, ".one") :: Nil
 

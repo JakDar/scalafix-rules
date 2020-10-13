@@ -61,6 +61,12 @@ class OwnExample(db: DefaultDB)(implicit ec: ExecutionContext) {
       )
       .map(_ => ())
 
+  def insertMethod(olaId: String, alaId: String, userId: String): Future[Unit] =
+    users
+      .insert.one(
+        BSONDocument("olaId" -> olaId, "alaId" -> alaId, "userId" -> userId)
+      )
+      .map(_ => ())
 }
 
 object OwnExample {
