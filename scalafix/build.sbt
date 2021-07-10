@@ -1,10 +1,10 @@
 lazy val V = _root_.scalafix.sbt.BuildInfo
-scalaVersion := "2.12.11"
+scalaVersion := "2.12.14"
 
 inThisBuild(
   List(
     organization := "com.geirsson",
-    scalaVersion := "2.12.11",
+    scalaVersion := "2.12.14",
     addCompilerPlugin(scalafixSemanticdb),
     scalacOptions ++= List(
       "-Yrangepos"

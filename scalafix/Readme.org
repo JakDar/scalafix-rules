@@ -1,0 +1,32 @@
+#+TITLE: Scalafix Rules
+* Sbt 13 build syntax
+Variation of [[https://gist.github.com/xuwei-k/d1ae2f6cdd960326648fe23b5c0385c6][this gist]].
+* Mongo update:
+-Right now handles only warns. Targeted at moving reactive mongo from 0.13.0 to 0.20.3
+** Improvements to make
+- [ ] MongoDriver -> AsyncDriver
+  - including wrapped fruture form try
+- [ ] Wrs - migrate to bson handler
+- this
+    [warn] : method count in trait GenericCollection is deprecated (since 0.16.0): Use `count` with `readConcern` parameter
+    [warn]     plans.count(Some(BSONDocument("usedBy" -> by.value))).map {
+- [ ] this
+    [W]       method find in trait GenericCollection is deprecated (since 0.16.0): Use `find` with optional `projection`
+    [W]       L21:       .find(BSONDocument("currency" -> currency.name, "visible" -> true))
+
+- [ ] and this
+    [W]       method insert in trait GenericCollection is deprecated (since 0.16.1): Use `.insert(ordered = false).one(..)`
+    [W]       L31:     plans.insert(PromoCode(value, newAssignments, newPlanId, None, None)).map(_ => Done)
+
+** Things to fix:
+- [ ] make it idempotent
+- [ ] Don't insert 'one' if there is e.g. =insert(ordered=false).one(...)= already.
+- [ ] Fix find not forking
+  #+BEGIN_SRC scala
+  override def getAvailableUlas(ala: Ala): Future[List[Ula]] =
+    ulas
+      .find(BSONDocument("ala" -> ala.name, "visible" -> true))
+      .sort(BSONDocument("index" -> 1))
+      .cursor[Ula]()
+      .collect[List](Int.MaxValue, Cursor.FailOnError[List[Ula]]())
+  #+END_SRC
