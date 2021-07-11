@@ -28,6 +28,11 @@ class Sbt0_13BuildSyntax extends SyntacticRule("Sbt0_13BuildSyntax") {
               case _ =>
                 Patch.empty
             }
+
+          case _ if t.parent.exists(_.isInstanceOf[Term.Select]) =>
+            val select = t.parent.get.asInstanceOf[Term.Select]
+            stringSlashify(t.lhs, t.args).fold(Patch.empty)(inner => Patch.replaceTree(select, s"($inner).${select.name.value}"))
+
           case _ if !t.parent.exists(maybeOldSyntax) =>
             slashify(t, t.lhs, t.args)
           case _ =>
@@ -39,13 +44,14 @@ class Sbt0_13BuildSyntax extends SyntacticRule("Sbt0_13BuildSyntax") {
   }
 
   def slashify(t: Tree, lhs: Term, args: Seq[Term]): Patch =
+    stringSlashify(lhs, args).fold(Patch.empty)(Patch.replaceTree(t, _))
+
+  def stringSlashify(lhs: Term, args: Seq[Term]): Option[String] = {
     args match {
-      case List(arg0) =>
-        Patch.replaceTree(t, s"$arg0 / $lhs")
-      case List(arg0, arg1) =>
-        Patch.replaceTree(t, s"$arg0 / $arg1 / $lhs")
-      case List(arg0, arg1, arg2) =>
-        Patch.replaceTree(t, s"$arg0 / $arg1 / $arg2 / $lhs")
-      case _ => Patch.empty
+      case List(arg0)             => Some(s"$arg0 / $lhs")
+      case List(arg0, arg1)       => Some(s"$arg0 / $arg1 / $lhs")
+      case List(arg0, arg1, arg2) => Some(s"$arg0 / $arg1 / $arg2 / $lhs")
+      case _                      => None
     }
+  }
 }
