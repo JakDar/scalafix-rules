@@ -1,19 +1,17 @@
 lazy val V = _root_.scalafix.sbt.BuildInfo
-scalaVersion := "2.12.14"
+scalaVersion := "2.13.7"
 
 inThisBuild(
   List(
-    organization := "com.geirsson",
-    scalaVersion := "2.12.14",
+    organization := "com.github.jakdar",
+    scalaVersion := "2.13.7",
     addCompilerPlugin(scalafixSemanticdb),
-    scalacOptions ++= List(
-      "-Yrangepos"
-    )
+    scalacOptions ++= List("-Yrangepos")
     // classLoaderLayeringStrategy in Compile := ClassLoaderLayeringStrategy.Flat
   )
 )
 
-skip in publish := true
+publish / skip := true
 
 lazy val rules = project.settings(
   moduleName := "named-literal-arguments",
@@ -24,20 +22,20 @@ lazy val rules = project.settings(
 )
 
 lazy val input = project.settings(
-  skip in publish := true,
-  libraryDependencies += "org.reactivemongo" %% "reactivemongo" % "0.20.3",
+  publish / skip := true,
+  libraryDependencies += "org.reactivemongo" %% "reactivemongo" % "0.20.13",
   scalacOptions ++= CompilerOpts.all
 )
 
 lazy val output = project.settings(
-  skip in publish := true,
-  libraryDependencies += "org.reactivemongo" %% "reactivemongo" % "0.20.3",
+  publish / skip := true,
+  libraryDependencies += "org.reactivemongo" %% "reactivemongo" % "0.20.13",
   scalacOptions ++= CompilerOpts.all
 )
 
 lazy val tests = project
   .settings(
-    skip in publish := true,
+    publish / skip := true,
     libraryDependencies += "ch.epfl.scala" % "scalafix-testkit" % V.scalafixVersion % Test cross CrossVersion.full,
     scalafixTestkitOutputSourceDirectories :=
       sourceDirectories.in(output, Compile).value,
